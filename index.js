@@ -10,6 +10,10 @@ let customerId = 0;
 let mealId = 0;
 let deliveryId = 0;
 
+function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+}
+
 
 
 
@@ -30,17 +34,19 @@ class Employer {
   }
 
   deliveries () {
-    let emps = this.employees()
-    let delivs = []
-    emps.forEach (function (emp){
-      emp.deliveries.forEach (function (del){
-        delivs.push(del)
-      })
-    })
-    return delivs
+    let allDeliveries = this.employees().map(employee => {
+      return employee.deliveries();
+    });
+    let merged = [].concat.apply([], allDeliveries);
+    return merged;
   }
 
-  meal () {
+  meals () {
+    let allMeals = this.deliveries().map(del => {
+      return del.meal();
+    });
+    let merged = [].concat.apply([], allMeals);
+    return merged.filter(onlyUnique);
 
   }
 
@@ -56,7 +62,7 @@ class Employer {
 class Customer {
 
 
-  constructor(name, employer) {
+  constructor(name, employer ={}) {
     this.name = name
     this.employer = employer
     this.id = ++customerId
@@ -70,7 +76,7 @@ class Customer {
 
   meals () {
     return store.meals.filter (meal => {
-      return meal.customerId === this.id
+      return this.deliveries()[0].customerId === this.id
     })
   }
 
@@ -81,15 +87,14 @@ class Customer {
   }
 
   totalSpent () {
-
+    let delivs = this.deliveries()
+    return delivs.reduce((total, amount) => total + amount);
   }
 }
 
 
 
 class Meal {
-
-
 
   constructor (title, price) {
     this.title = title
@@ -100,11 +105,18 @@ class Meal {
   }
 
   deliveries () {
+    return store.deliveries.filter (del => {
+      if (del.mealId === this.id) {
+      return del }
+    })
 
   }
 
   customers() {
 
+    return store.customers.filter (cust => {
+      return this.deliveries()[0].mealId === this.id;
+    })
   }
 
   byPrice () {
@@ -117,7 +129,7 @@ class Delivery {
 
 
   constructor (meal = {}, customer = {}) {
-    this.meal = meal
+    // this.meal = meal
     // this.customer = customer
     this.id = ++deliveryId
     this.customerId = customer.id
@@ -127,11 +139,17 @@ class Delivery {
   }
 
   meal () {
-
+    return store.meals.find (meal => {
+      if (meal.id === this.mealId) {
+      return meal }
+    })
   }
 
   customer () {
-
+    return store.customers.find (cust => {
+      if (cust.id === this.customerId) {
+      return cust }
+    })
   }
 
 }
