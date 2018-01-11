@@ -5,29 +5,39 @@ let store = {
   deliveries: []
 }
 
-let employerID = 0;
-let customerID = 0;
-let mealID = 0;
-let deliveryID = 0;
+let employerId = 0;
+let customerId = 0;
+let mealId = 0;
+let deliveryId = 0;
+
+
+
 
 class Employer {
 
   constructor (name) {
     this.name = name
-    this.id = ++employerID
+    this.id = ++employerId
     store.employers.push(this)
   }
 
   employees () {
-    // debugger
-    // find customers with this.id matching from store
 
-    store.customers.forEach ((cust) => (return cust.name))
+    return store.customers.filter (cust => {
+      return cust.employerId === this.id
+    })
 
   }
 
   deliveries () {
-
+    let emps = this.employees()
+    let delivs = []
+    emps.forEach (function (emp){
+      emp.deliveries.forEach (function (del){
+        delivs.push(del)
+      })
+    })
+    return delivs
   }
 
   meal () {
@@ -49,17 +59,25 @@ class Customer {
   constructor(name, employer) {
     this.name = name
     this.employer = employer
-    this.id = ++customerID
+    this.id = ++customerId
+    if (employer) {
+      this.employerId = employer.id
+    }
+
     store.customers.push(this)
 
   }
 
   meals () {
-
+    return store.meals.filter (meal => {
+      return meal.customerId === this.id
+    })
   }
 
   deliveries () {
-
+    return store.deliveries.filter (del => {
+      return del.customerId === this.id
+    })
   }
 
   totalSpent () {
@@ -76,7 +94,7 @@ class Meal {
   constructor (title, price) {
     this.title = title
     this.price = price
-    this.id = ++mealID
+    this.id = ++mealId
 
     store.meals.push(this)
   }
@@ -98,10 +116,12 @@ class Meal {
 class Delivery {
 
 
-  constructor (meal, customer) {
+  constructor (meal = {}, customer = {}) {
     this.meal = meal
-    this.customer = customer
-    this.id = ++deliveryID
+    // this.customer = customer
+    this.id = ++deliveryId
+    this.customerId = customer.id
+    this.mealId = meal.id
 
     store.deliveries.push(this)
   }
